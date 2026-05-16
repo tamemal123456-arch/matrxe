@@ -1,0 +1,41 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "MATRXe",
+  "alternateName": "ماترِكسي",
+  "applicationCategory": "AIApplication",
+  "operatingSystem": "Web",
+  "description": "MATRXe is a digital twin platform that creates AI-powered virtual twins capable of conversation, voice cloning, talking video, and task automation. Built with React, TypeScript, Supabase, and multi-provider AI fallback.",
+  "applicationSuite": "Digital Twin Platform",
+  "author": {
+    "@type": "Person",
+    "name": "MATRXe Development Team"
+  },
+  "copyrightHolder": {
+    "@type": "Organization",
+    "name": "MATRXe"
+  },
+  "copyrightYear": "2026",
+  "dateCreated": "2026-01-01",
+  "datePublished": "2026-05-01",
+  "keywords": "digital twin, AI, artificial intelligence, virtual twin, voice cloning, talking avatar, React, Supabase, MATRXe, توأم رقمي, ذكاء اصطناعي",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "features": [
+    "AI-powered digital twin creation",
+    "Multi-provider AI with automatic fallback (DeepSeek, Google Gemini, Groq, OpenRouter, OpenAI)",
+    "Voice cloning and text-to-speech",
+    "Talking video generation",
+    "Speech-to-text with Google Gemini + Whisper",
+    "Supabase authentication with Google OAuth and Magic Link",
+    "Full Arabic RTL support",
+    "Self-learning twin memory system",
+    "End-to-end encrypted API key management",
+    "GDPR and CCPA compliant privacy policy"
+  ],
+  "softwareVersion": "1.0.0",
+  "url": "https://matrxe.com"
+}
