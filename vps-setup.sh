@@ -5,7 +5,7 @@ DOMAIN="matrxe.com"
 EMAIL="admin@matrxe.com"
 DIR="/var/www/matrxe"
 OLD_DIR="/var/www/matrxe-old"
-REPO_URL="" # املأ هذا إذا أردت استخدام git clone بدلاً من FileZilla
+REPO_URL="https://github.com/tamemal123456-arch/matrxe.git" # Git clone بدلاً من FileZilla
 
 # ─── Detect deployment method ───
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -54,7 +54,17 @@ echo ""
 # ─── 1. Install system dependencies ───
 echo ">>> Installing system dependencies..."
 apt update && apt upgrade -y
-apt install -y git curl nginx certbot python3-certbot-nginx ufw nodejs npm
+apt install -y git curl nginx certbot python3-certbot-nginx ufw
+
+# ─── 1b. Install Node.js if missing ───
+if ! command -v node &>/dev/null; then
+  echo ">>> Installing Node.js..."
+  curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+  apt install -y nodejs
+fi
+
+echo "   Node: $(node -v)"
+echo "   npm: $(npm -v)"
 
 # ─── 2. Get project files ───
 echo ">>> Setting up project directory..."
