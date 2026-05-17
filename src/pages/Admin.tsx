@@ -22,7 +22,9 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Bot, MessageSquare, CreditCard, ArrowRight, Trash2, Key } from "lucide-react";
+import { TeamManagement } from "@/components/team/TeamManagement";
+import { DataExport } from "@/components/team/DataExport";
+import { Shield, Users, Bot, MessageSquare, CreditCard, ArrowRight, Trash2, Key, Download, UsersRound } from "lucide-react";
 import AdminApiKeys from "@/components/admin/AdminApiKeys";
 
 type Profile = {
@@ -200,6 +202,12 @@ const Admin = () => {
             <TabsTrigger value="api-keys" className="gap-2">
               <Key className="w-4 h-4" /> المفاتيح
             </TabsTrigger>
+            <TabsTrigger value="teams" className="gap-2">
+              <UsersRound className="w-4 h-4" /> الفرق
+            </TabsTrigger>
+            <TabsTrigger value="export" className="gap-2">
+              <Download className="w-4 h-4" /> التصدير
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
@@ -290,6 +298,18 @@ const Admin = () => {
 
           <TabsContent value="api-keys">
             <AdminApiKeys />
+          </TabsContent>
+
+          <TabsContent value="teams">
+            <div className="glass-card rounded-xl border border-border/50 p-4">
+              <TeamManagement />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="export">
+            <div className="glass-card rounded-xl border border-border/50 p-4">
+              <DataExport />
+            </div>
           </TabsContent>
 
           <TabsContent value="subs">

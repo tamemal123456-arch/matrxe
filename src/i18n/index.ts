@@ -43,3 +43,32 @@ export function initLanguage() {
 export function useI18n() {
   return { t, setLanguage, getLanguage, currentLang };
 }
+
+import { createContext, useContext, useEffect, type ReactNode } from "react";
+
+interface I18nCtx {
+  t: typeof t;
+  setLanguage: typeof setLanguage;
+  getLanguage: typeof getLanguage;
+  currentLang: Language;
+}
+
+const I18nContext = createContext<I18nCtx>({
+  t,
+  setLanguage,
+  getLanguage,
+  currentLang: "ar",
+});
+
+export function I18nProvider({ children }: { children: ReactNode }) {
+  useEffect(() => { initLanguage() }, []);
+  return (
+    <I18nContext.Provider value={{ t, setLanguage, getLanguage, currentLang }}>
+      {children}
+    </I18nContext.Provider>
+  );
+}
+
+export function useTranslation() {
+  return useContext(I18nContext);
+}

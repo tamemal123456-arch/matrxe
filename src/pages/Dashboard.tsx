@@ -18,6 +18,8 @@ import TwinTasksManager from "@/components/dashboard/TwinTasksManager";
 import SocialMediaIntegration from "@/components/dashboard/SocialMediaIntegration";
 import DashboardApiKeys from "@/components/dashboard/DashboardApiKeys";
 import DashboardCampaigns from "@/components/dashboard/DashboardCampaigns";
+import { TeamManagement } from "@/components/team/TeamManagement";
+import { DataExport } from "@/components/team/DataExport";
 import TwinAdvancedSettings from "@/components/twin/TwinAdvancedSettings";
 import TwinExternalAI from "@/components/twin/TwinExternalAI";
 import TwinConnectDevices from "@/components/twin/TwinConnectDevices";
@@ -180,6 +182,10 @@ const Dashboard = () => {
         return <DashboardCampaigns />;
       case "billing":
         return <DashboardBilling />;
+      case "team":
+        return <TeamManagement />;
+      case "export":
+        return <DataExport />;
       case "help":
         return <DashboardHelp />;
       default:

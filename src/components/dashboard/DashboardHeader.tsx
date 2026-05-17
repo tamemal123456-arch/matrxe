@@ -18,7 +18,6 @@ import {
   ListTodo,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +32,8 @@ import {
 } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { ConversationSearch } from "@/components/dashboard/ConversationSearch";
 import logoIcon from "@/assets/logo-icon.png";
 import { cn } from "@/lib/utils";
 
@@ -124,22 +125,13 @@ const DashboardHeader = ({ activeTab, onTabChange }: DashboardHeaderProps) => {
 
         {/* Search (Desktop) */}
         <div className="hidden lg:flex items-center gap-4 flex-1 max-w-md">
-          <div className="relative w-full">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="البحث..."
-              className="pr-10 bg-muted/50 border-border/50 focus:bg-background"
-            />
-          </div>
+          <ConversationSearch />
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2">
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
-          </Button>
+          <NotificationBell />
 
           {/* User Menu */}
           <DropdownMenu>

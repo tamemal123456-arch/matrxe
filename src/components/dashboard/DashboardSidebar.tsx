@@ -25,11 +25,13 @@ import {
   Brain,
   Globe,
   Clock,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useUserRole } from "@/hooks/useUserRole";
 import logoIcon from "@/assets/logo-icon.png";
 import { cn } from "@/lib/utils";
 
@@ -57,6 +59,8 @@ const integrationNavItems: SidebarItem[] = [
 const secondaryNavItems: SidebarItem[] = [
   { icon: Settings, label: "الإعدادات", href: "/dashboard/settings" },
   { icon: CreditCard, label: "الاشتراك", href: "/dashboard/billing" },
+  { icon: Users, label: "الفريق", href: "/dashboard/team" },
+  { icon: Download, label: "تصدير البيانات", href: "/dashboard/export" },
   { icon: HelpCircle, label: "المساعدة", href: "/dashboard/help" },
 ];
 
@@ -85,6 +89,7 @@ interface DashboardSidebarProps {
 const DashboardSidebar = ({ activeTab, onTabChange, selectedTwinId, selectedTwinName, onBackToTwins }: DashboardSidebarProps) => {
   const { signOut } = useAuth();
   const { plan, isPaidPlan } = useSubscription();
+  const { isAdmin } = useUserRole();
 
   const handleNavClick = (href: string) => {
     const tab = href.split("/").pop() || "dashboard";
