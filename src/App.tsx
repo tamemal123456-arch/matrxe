@@ -17,6 +17,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ApiDocs from "./pages/ApiDocs";
 import NotFound from "./pages/NotFound";
 
 const CreateTwin = lazy(() => import("./pages/CreateTwin"));
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/admin" element={<Suspense fallback={<SkeletonPage />}><Admin /></Suspense>} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/api-docs" element={<ApiDocs />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

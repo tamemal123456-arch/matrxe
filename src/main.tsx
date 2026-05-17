@@ -3,9 +3,13 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { initLanguage } from "@/i18n";
+import { initSentry } from "@/lib/sentry";
 
 // Init language
 initLanguage();
+
+// Init Sentry (frontend error tracking)
+initSentry();
 
 // Register PWA service worker
 if ("serviceWorker" in navigator) {

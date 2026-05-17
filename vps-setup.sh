@@ -60,6 +60,17 @@ server {
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Content-Security-Policy "
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://apis.google.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        img-src 'self' data: blob: https://*.supabase.co https://*.googleusercontent.com https://i.ibb.co;
+        connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://generativelanguage.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        frame-src https://*.supabase.co https://js.stripe.com;
+        media-src 'self' blob:;
+        worker-src 'self' blob:;
+    " always;
 }
 NGINX
 

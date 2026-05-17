@@ -26,6 +26,7 @@ import {
   Globe,
   Clock,
   Download,
+  Code,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +62,7 @@ const secondaryNavItems: SidebarItem[] = [
   { icon: CreditCard, label: "الاشتراك", href: "/dashboard/billing" },
   { icon: Users, label: "الفريق", href: "/dashboard/team" },
   { icon: Download, label: "تصدير البيانات", href: "/dashboard/export" },
+  { icon: Code, label: "توثيق API", href: "/api-docs" },
   { icon: HelpCircle, label: "المساعدة", href: "/dashboard/help" },
 ];
 
