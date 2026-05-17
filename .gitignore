@@ -20,6 +20,9 @@ dist-ssr
 # Supabase secrets
 supabase/config.toml
 
+# Supabase CLI binary
+supabase.exe
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -27,7 +27,9 @@ import {
   Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import logoIcon from "@/assets/logo-icon.png";
 import { cn } from "@/lib/utils";
 
@@ -82,6 +84,7 @@ interface DashboardSidebarProps {
 
 const DashboardSidebar = ({ activeTab, onTabChange, selectedTwinId, selectedTwinName, onBackToTwins }: DashboardSidebarProps) => {
   const { signOut } = useAuth();
+  const { plan, isPaidPlan } = useSubscription();
 
   const handleNavClick = (href: string) => {
     const tab = href.split("/").pop() || "dashboard";
@@ -97,12 +100,17 @@ const DashboardSidebar = ({ activeTab, onTabChange, selectedTwinId, selectedTwin
     >
       {/* Logo */}
       <div className="p-6 border-b border-sidebar-border">
-        <Link to="/" className="flex items-center gap-3">
-          <img src={logoIcon} alt="ماترِكسي" className="w-10 h-10" />
-          <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            ماترِكسي
-          </span>
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3">
+            <img src={logoIcon} alt="ماترِكسي" className="w-10 h-10" />
+            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              ماترِكسي
+            </span>
+          </Link>
+          <Badge variant={isPaidPlan ? "default" : "secondary"} className={isPaidPlan ? "bg-accent/20 text-accent" : "text-xs"}>
+            {plan?.name_ar || "مجاني"}
+          </Badge>
+        </div>
       </div>
 
       {/* Main Navigation */}

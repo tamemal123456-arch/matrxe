@@ -429,6 +429,60 @@ curl -I https://matrxe.com
 
 ---
 
+## المرحلة 7: إعداد Stripe (لتحويل المشروع لـ SaaS)
+
+### 7.1 إنشاء حساب Stripe
+- اذهب إلى https://dashboard.stripe.com/register
+- سجل حساب (مجاني — تستلم بعد أول عملية دفع)
+- فعّل وضع **Test Mode** للتجربة (Toggle في Dashboard)
+
+### 7.2 الحصول على المفاتيح
+- Stripe Dashboard → Developers → API Keys
+- أنشئ `STRIPE_SECRET_KEY` (يبدأ بـ `sk_live_` أو `sk_test_`)
+- أنشئ `STRIPE_WEBHOOK_SECRET` بعد نشر الويب هوك
+
+### 7.3 إنشاء منتجات Stripe
+Stripe Dashboard → Products → Add Product:
+1. **MATRXe Pro Monthly**: $49/شهر → إنشاء Price ID (يبدأ بـ `price_`)
+2. **MATRXe Pro Yearly**: $490/سنة → Price ID
+3. **MATRXe Enterprise Monthly**: $199/شهر → Price ID
+4. **MATRXe Enterprise Yearly**: $1,990/سنة → Price ID
+
+### 7.4 تحديث قاعدة البيانات بـ Price IDs
+في SQL Editor، شغّل:
+```sql
+UPDATE subscription_plans SET
+  stripe_price_id_monthly = 'price_YOUR_PRO_MONTHLY_ID',
+  stripe_price_id_yearly = 'price_YOUR_PRO_YEARLY_ID'
+WHERE id = 'pro';
+
+UPDATE subscription_plans SET
+  stripe_price_id_monthly = 'price_YOUR_ENT_MONTHLY_ID',
+  stripe_price_id_yearly = 'price_YOUR_ENT_YEARLY_ID'
+WHERE id = 'enterprise';
+```
+
+### 7.5 إضافة الـ Webhook endpoint
+Stripe Dashboard → Developers → Webhooks → Add endpoint:
+- URL: `https://iisyyazgugvmehzrpyfr.supabase.co/functions/v1/stripe-webhook`
+- Events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`
+- أنشئ `STRIPE_WEBHOOK_SECRET` وضيفه لـ Edge Function Secrets
+
+### 7.6 إضافة الأسرار
+في Supabase Dashboard → Edge Functions → Secrets:
+| الاسم | القيمة |
+|-------|--------|
+| `STRIPE_SECRET_KEY` | `sk_live_...` أو `sk_test_...` |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_...` |
+
+### 7.7 نشر دوال Stripe
+أنشئ 3 دوال جديدة في Dashboard:
+- `stripe-webhook` ← كود من `supabase/functions/stripe-webhook/index.ts`
+- `create-checkout` ← كود من `supabase/functions/create-checkout/index.ts`
+- `manage-subscription` ← كود من `supabase/functions/manage-subscription/index.ts`
+
+---
+
 ## مشاكل وحلول
 
 | المشكلة | السبب | الحل |
@@ -437,3 +491,5 @@ curl -I https://matrxe.com
 | Chat يعطي "تعذر الاتصال بأي مزود" | `DEEPSEEK_API_KEY` مو مضبوط | أضف الـ secret |
 | "Not allowed to load local resource" | صور blob محلية | ارفع الصور لـ Supabase Storage |
 | OAuth redirect لا يعمل | Site URL مو مضبوط | صحح في Auth → Settings |
+| Stripe checkout لا يعمل | Price ID مو مضبوط | حدث `stripe_price_id_monthly` في جدول `subscription_plans` |
+| Webhook 500 | Secret مو مضبوط | أضف `STRIPE_WEBHOOK_SECRET` في Edge Function Secrets |

@@ -147,6 +147,8 @@ if (-not $SkipFunctions) {
   # $neededSecrets["OPENROUTER_API_KEY"] = "sk-or-..."   # Free models: google/gemini-2.5-flash, meta-llama/llama-3-70b-instruct
   # $neededSecrets["GROQ_API_KEY"] = "gsk_..."           # Free tier: Llama 3.3 70B, Mixtral 8x7B
   # $neededSecrets["GOOGLE_API_KEY"] = "AIza..."         # Google AI Studio free tier: Gemini 2.5 Flash
+  # $neededSecrets["STRIPE_SECRET_KEY"] = "sk_live_..."  # Stripe secret key for subscriptions
+  # $neededSecrets["STRIPE_WEBHOOK_SECRET"] = "whsec_..." # Stripe webhook signing secret
 
   if ($sbAvailable) {
     foreach ($secret in $neededSecrets.Keys) {

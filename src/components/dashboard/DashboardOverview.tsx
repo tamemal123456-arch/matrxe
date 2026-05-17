@@ -8,9 +8,13 @@ import {
   Sparkles,
   ArrowUpRight,
   ArrowDownRight,
+  Crown,
+  CreditCard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface StatCardProps {
   title: string;
@@ -61,6 +65,9 @@ interface DashboardOverviewProps {
 
 const DashboardOverview = ({ twinsCount, conversationsCount, onTabChange }: DashboardOverviewProps) => {
   const navigate = useNavigate();
+  const { plan, currentPlan, isPaidPlan, remaining, getLimit, getUsage } = useSubscription();
+  const msgRemaining = remaining("max_messages_monthly");
+  const msgLimit = getLimit("max_messages_monthly");
 
   return (
     <div className="space-y-8">
@@ -71,21 +78,37 @@ const DashboardOverview = ({ twinsCount, conversationsCount, onTabChange }: Dash
         className="glass-card rounded-2xl p-8 border border-border/50 bg-gradient-to-br from-primary/5 to-accent/5"
       >
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-              مرحباً بك في لوحة التحكم 👋
-            </h1>
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                مرحباً بك في لوحة التحكم
+              </h1>
+              <Badge variant={isPaidPlan ? "default" : "secondary"} className={isPaidPlan ? "bg-gradient-to-r from-primary to-accent" : ""}>
+                {isPaidPlan ? <Crown className="w-3 h-3 ml-1" /> : null}
+                {plan?.name_ar || "مجاني"}
+              </Badge>
+            </div>
             <p className="text-muted-foreground">
-              قم بإدارة توائمك الرقمية ومتابعة المحادثات والإحصائيات
+              {isPaidPlan
+                ? `تبقى لديك ${msgRemaining === Infinity ? "غير محدود" : msgRemaining + " رسالة"} هذا الشهر`
+                : `تبقى ${msgRemaining} من ${msgLimit} رسالة هذا الشهر`}
             </p>
           </div>
-          <Button
-            onClick={() => navigate("/create-twin")}
-            className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
-          >
-            <Sparkles className="w-5 h-5 ml-2" />
-            إنشاء توأم جديد
-          </Button>
+          <div className="flex items-center gap-3">
+            {!isPaidPlan && (
+              <Button variant="outline" onClick={() => onTabChange("billing")} className="gap-2">
+                <Crown className="w-4 h-4" />
+                ترقية
+              </Button>
+            )}
+            <Button
+              onClick={() => navigate("/create-twin")}
+              className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
+            >
+              <Sparkles className="w-5 h-5 ml-2" />
+              إنشاء توأم جديد
+            </Button>
+          </div>
         </div>
       </motion.div>
 

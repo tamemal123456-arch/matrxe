@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -37,6 +38,7 @@ const SERVICE_OPTIONS = ["chat", "image", "tts", "embedding"];
 
 const DashboardApiKeys = () => {
   const { user } = useAuth();
+  const { canAccess } = useSubscription();
   const { toast } = useToast();
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
@@ -129,10 +131,13 @@ const DashboardApiKeys = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-foreground">مفاتيح API</h2>
-          <p className="text-sm text-muted-foreground">المفاتيح المجانية أولاً، والمدفوعة كاحتياطي تلقائي</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-foreground mb-1">مفاتيح API</h1>
+        <p className="text-muted-foreground">إدارة مفاتيح مزودي الذكاء الاصطناعي</p>
+        {!canAccess("api_access") && (
+          <p className="text-sm text-destructive mt-2">ميزة مفاتيح API متاحة فقط لخطة المؤسسات. قم بترقية خطتك للوصول.</p>
+        )}
+      </div>
         <Button onClick={() => setShowAdd(!showAdd)} className="gap-2">
           <Plus className="w-4 h-4" />
           إضافة مفتاح

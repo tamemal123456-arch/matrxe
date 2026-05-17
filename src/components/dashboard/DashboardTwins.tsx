@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useToast } from "@/hooks/use-toast";
 
 interface DigitalTwin {
@@ -55,6 +56,7 @@ interface DashboardTwinsProps {
 const DashboardTwins = ({ twins, onTwinsChange, onSelectTwin }: DashboardTwinsProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { currentPlan, getLimit, remaining, isPaidPlan } = useSubscription();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedTwin, setSelectedTwin] = useState<DigitalTwin | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -154,13 +156,20 @@ const DashboardTwins = ({ twins, onTwinsChange, onSelectTwin }: DashboardTwinsPr
           <h1 className="text-2xl font-bold text-foreground mb-1">التوائم الرقمية</h1>
           <p className="text-muted-foreground">إدارة وتخصيص توائمك الرقمية</p>
         </div>
-        <Button
-          onClick={() => navigate("/create-twin")}
-          className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
-        >
-          <Plus className="w-5 h-5 ml-2" />
-          إنشاء توأم جديد
-        </Button>
+          <Button
+            onClick={() => {
+              const limit = getLimit("max_twins");
+              if (twins.length >= limit) {
+                toast({ title: "تم الوصول للحد الأقصى", description: `خطتك تسمح بـ ${limit === Infinity ? "غير محدود" : limit + " توائم"}. قم بالترقية لإضافة المزيد.`, variant: "destructive" });
+                return;
+              }
+              navigate("/create-twin");
+            }}
+            className="bg-gradient-to-r from-primary to-accent hover:opacity-90"
+          >
+            <Plus className="w-5 h-5 ml-2" />
+            {twins.length > 0 ? "إنشاء توأم جديد" : "إنشاء أول توأم"}
+          </Button>
       </div>
 
       {/* Search & Filter */}
