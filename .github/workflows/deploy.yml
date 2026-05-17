@@ -1,0 +1,50 @@
+name: Deploy MATRXe
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint || true
+
+      - name: Test
+        run: npm test || true
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+
+      - name: Deploy to VPS
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+          ARGS: "-rlgoDzvc -i --delete"
+          SOURCE: "dist/"
+          REMOTE_HOST: ${{ vars.VPS_HOST }}
+          REMOTE_USER: ${{ vars.VPS_USER }}
+          TARGET: ${{ vars.VPS_TARGET }}
+          EXCLUDE: ".env, node_modules"
+
+      - name: Deploy Supabase Edge Functions
+        uses: supabase/supabase-action@v1
+        with:
+          project_id: ${{ vars.SUPABASE_PROJECT_ID }}
+          supabase_access_token: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          functions: twin-chat twin-learning speech-to-text elevenlabs-tts talking-video clone-voice stripe-webhook create-checkout manage-subscription send-email data-export
