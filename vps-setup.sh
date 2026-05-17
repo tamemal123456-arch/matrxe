@@ -4,34 +4,54 @@ set -e
 DOMAIN="matrxe.com"
 EMAIL="admin@matrxe.com"
 DIR="/var/www/matrxe"
-REPO_URL="" # << املأ رابط المستودع (GitHub/GitLab)
+REPO_URL="" # املأ هذا إذا أردت استخدام git clone بدلاً من FileZilla
+
+# ─── Detect deployment method ───
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARENT_DIR="$(dirname "$SCRIPT_DIR")"
 
 # ─── 1. Install system dependencies ───
 echo ">>> Installing system dependencies..."
 apt update && apt upgrade -y
-apt install -y git curl nodejs nginx certbot python3-certbot-nginx ufw
+apt install -y git curl nginx certbot python3-certbot-nginx ufw nodejs npm
 
-# ─── 2. Clone project ───
-echo ">>> Cloning project..."
+# ─── 2. Get project files ───
+echo ">>> Setting up project directory..."
 mkdir -p "$DIR"
-if [ -z "$REPO_URL" ]; then
-  echo "ERROR: REPO_URL فارغ. عدّل السطر 7 في هذا الملف وأضف رابط المستودع."
+
+if [ -n "$REPO_URL" ]; then
+  echo ">>> Cloning from repository..."
+  git clone "$REPO_URL" "$DIR"
+elif [ -f "$SCRIPT_DIR/package.json" ]; then
+  echo ">>> Copying from uploaded files (FileZilla)..."
+  rsync -a --exclude='node_modules' --exclude='.git' --exclude='.env' "$SCRIPT_DIR/" "$DIR/"
+else
+  echo "ERROR: لا يوجد package.json في المسار الحالي ولا REPO_URL."
+  echo "       إما عيّن REPO_URL في السطر 8، أو ارسل الملفات عبر FileZilla إلى هذا المجلد."
   exit 1
 fi
-git clone "$REPO_URL" "$DIR"
+
+cd "$DIR"
 
 # ─── 3. Create .env ───
 echo ">>> Creating .env file..."
-cat > "$DIR/.env" <<ENV
+if [ -f ".env.production" ]; then
+  echo ">>> Using .env.production as .env..."
+  cp .env.production .env
+else
+  echo ">>> Creating default .env..."
+  cat > .env <<ENV
 VITE_SUPABASE_PROJECT_ID="iisyyazgugvmehzrpyfr"
 VITE_SUPABASE_URL="https://iisyyazgugvmehzrpyfr.supabase.co"
-VITE_SUPABASE_PUBLISHABLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlpc3l5YXpndWd2bWVoenJweWZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg1MjEwMDYsImV4cCI6MjA4NDA5NzAwNn0.UfdMljksbxu772rcltgZpWZuGNd0RBky9qNycd2kNMo"
+VITE_SUPABASE_PUBLISHABLE_KEY="<ضع المفتاح من Supabase Dashboard → Settings → API → anon key>"
+VITE_SENTRY_DSN=""
 ENV
+  echo "⚠️  افتح .env وأضف VITE_SUPABASE_PUBLISHABLE_KEY من Supabase Dashboard"
+fi
 
 # ─── 4. Install npm dependencies & build ───
 echo ">>> Installing npm dependencies..."
-cd "$DIR"
-npm install
+npm install --legacy-peer-deps
 
 echo ">>> Building frontend..."
 npm run build
@@ -46,13 +66,22 @@ server {
     index index.html;
 
     gzip on;
-    gzip_types text/css application/javascript image/svg+xml;
+    gzip_min_length 1000;
+    gzip_types text/css application/javascript application/json image/svg+xml text/plain;
+    gzip_vary on;
 
     location / {
         try_files \$uri \$uri/ /index.html;
     }
 
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|webp)$ {
+    location /api/ {
+        proxy_pass https://iisyyazgugvmehzrpyfr.supabase.co/functions/v1/;
+        proxy_set_header Host iisyyazgugvmehzrpyfr.supabase.co;
+        proxy_set_header Authorization \$http_authorization;
+        proxy_http_version 1.1;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|webp|woff2)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
@@ -60,9 +89,10 @@ server {
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(self), microphone=(self), geolocation=()" always;
     add_header Content-Security-Policy "
         default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://apis.google.com;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://apis.google.com https://js.stripe.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         img-src 'self' data: blob: https://*.supabase.co https://*.googleusercontent.com https://i.ibb.co;
         connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://generativelanguage.googleapis.com;
@@ -93,52 +123,38 @@ ufw allow 22/tcp
 ufw --force enable
 
 echo ""
-echo "=========================================="
+echo "═══════════════════════════════════════════════"
 echo "  ✅ https://$DOMAIN"
-echo "=========================================="
+echo "═══════════════════════════════════════════════"
 echo ""
 echo "═══════════════════════════════════════════════"
 echo "  الخطوة التالية: نشر Supabase Edge Functions"
 echo "═══════════════════════════════════════════════"
 echo ""
-echo "  الطريقة 1 — عبر Supabase Dashboard (يدوي):"
-echo "    1. افتح https://supabase.com/dashboard/project/iisyyazgugvmehzrpyfr"
-echo "    2. اذهب إلى Edge Functions → أنشئ كل function والصق الكود من:"
-for func in "$DIR"/supabase/functions/*/; do
-  name=$(basename "$func")
-  echo "       - $name  ←  $func/index.ts"
-done
-echo "    3. اذهب إلى Project Settings → API → Service Role Key"
-echo "       وانسخه واستخدمه في متغير SUPABASE_SERVICE_ROLE_KEY"
-echo "    4. اذهب إلى Edge Functions → [أي function] → Secrets"
-echo "       وأضف هذه الأسرار:"
-echo "       - DEEPSEEK_API_KEY = <مفتاحك الخاص>"
-echo "       - ELEVENLABS_API_KEY = <مفتاح ElevenLabs الخاص بك>"
-echo "       - API_KEY_ENCRYPTION_KEY = <مفتاح تشفير قوي>"
-echo "       - CONTACT_PHONE = <رقم هاتفك>"
+echo "  1. افتح: https://supabase.com/dashboard/project/iisyyazgugvmehzrpyfr"
 echo ""
-echo "  الطريقة 2 — عبر Supabase CLI (أسرع):"
-echo "    npm install -g supabase"
-echo "    supabase login"
-echo "    cd $DIR"
-echo "    supabase link --project-ref iisyyazgugvmehzrpyfr"
-echo "    supabase db push"
-echo "    supabase secrets set DEEPSEEK_API_KEY=... ..."
-echo "    supabase functions deploy --project-ref iisyyazgugvmehzrpyfr --no-verify-jwt \\"
-for func in "$DIR"/supabase/functions/*/; do
-  name=$(basename "$func")
-  echo "      $name \\"
+echo "  2. شغّل الترحيلات (SQL Editor):"
+echo "     - افتح SQL Editor → New Query"
+echo "     - لكل ملف في supabase/migrations/ انسخ المحتوى وشغّله بالترتيب"
+echo "     - ابدأ من أقدم تاريخ إلى أحدث تاريخ"
+echo ""
+echo "  3. أنشئ Edge Functions:"
+ls -1 "$DIR/supabase/functions/" 2>/dev/null | while read func; do
+  echo "     - Create Function → $func"
 done
 echo ""
-echo "═══════════════════════════════════════════════"
-echo "  إعدادات Supabase Dashboard المطلوبة يدوياً:"
-echo "═══════════════════════════════════════════════"
+echo "  4. أضف الأسرار (Secrets) لكل function:"
+echo "     - DEEPSEEK_API_KEY = <مفتاح DeepSeek>"
+echo "     - ELEVENLABS_API_KEY = <مفتاح ElevenLabs>"
+echo "     - API_KEY_ENCRYPTION_KEY = <openssl rand -hex 32>"
+echo "     - CONTACT_PHONE = <رقم الهاتف>"
+echo "     - SUPABASE_SERVICE_ROLE_KEY = <من Project Settings → API>"
+echo "     - STRIPE_SECRET_KEY = <sk_live_...>"
+echo "     - STRIPE_WEBHOOK_SECRET = <whsec_...>"
 echo ""
-echo "  1. Auth → Settings → Site URL: https://$DOMAIN"
-echo "     Redirect URLs: https://$DOMAIN/**"
-echo "  2. Auth → Providers → Google: فعّل وأضف Client ID + Secret"
-echo "     (أنشئهم من Google Cloud Console)"
-echo "  3. Auth → Providers → Magic Link: فعّل (مجاني، يعمل مع أي بريد)"
-echo "  4. Storage → buckets → twin-images: تأكد من وجوده"
-echo "  5. SQL Editor: شغّل جميع ملفات SQL من supabase/migrations/ بالترتيب"
+echo "  5. إعدادات Auth:"
+echo "     - Site URL: https://$DOMAIN"
+echo "     - Google OAuth: فعّل وأضف Client ID + Secret"
+echo "     - Magic Link: فعّل"
 echo ""
+echo "═══════════════════════════════════════════════"

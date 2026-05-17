@@ -37,3 +37,6 @@ supabase.exe
 # OS
 Thumbs.db
 Desktop.ini
+
+# Build artifacts
+*.zip
