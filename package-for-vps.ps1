@@ -74,6 +74,12 @@ Write-Host "`n> إنشاء دليل الرفع..." -ForegroundColor Green
    chmod +x vps-setup.sh
    ./vps-setup.sh
 
+ملاحظة: السكربت سيقوم تلقائياً بما يلي:
+  • حذف النظام القديم من /var/www/matrxe ← نسخه إلى /var/www/matrxe-old
+  • إزالة إعدادات Nginx القديمة
+  • التحقق من المنافذ 80/443
+  • تنظيف ذاكرة npm المخبأة
+
 ── الخطوة 3: بعد انتهاء السكربت ──
 
 1. افتح: https://supabase.com/dashboard/project/iisyyazgugvmehzrpyfr

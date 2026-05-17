@@ -4,11 +4,52 @@ set -e
 DOMAIN="matrxe.com"
 EMAIL="admin@matrxe.com"
 DIR="/var/www/matrxe"
+OLD_DIR="/var/www/matrxe-old"
 REPO_URL="" # املأ هذا إذا أردت استخدام git clone بدلاً من FileZilla
 
 # ─── Detect deployment method ───
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PARENT_DIR="$(dirname "$SCRIPT_DIR")"
+
+# ─── 0. Remove old deployment ───
+echo "═══════════════════════════════════════════════"
+echo "  تنظيف النظام القديم..."
+echo "═══════════════════════════════════════════════"
+echo ""
+
+# 0a. Backup old directory before removing
+if [ -d "$DIR" ]; then
+  echo ">>> عمل نسخة احتياطية من النظام القديم..."
+  rm -rf "$OLD_DIR" 2>/dev/null || true
+  mv "$DIR" "$OLD_DIR"
+  echo "  ✓ نُقل $DIR → $OLD_DIR (يمكنك حذفه يدوياً لاحقاً)"
+fi
+
+# 0b. Remove old Nginx config
+if [ -f "/etc/nginx/sites-enabled/matrxe" ]; then
+  echo ">>> إزالة إعدادات Nginx القديمة..."
+  rm -f /etc/nginx/sites-enabled/matrxe
+  rm -f /etc/nginx/sites-available/matrxe
+  echo "  ✓ تمت إزالة إعدادات Nginx القديمة"
+fi
+
+# 0c. Stop services using port 80/443 if any
+echo ">>> التحقق من المنافذ..."
+for port in 80 443; do
+  pid=$(lsof -ti :$port 2>/dev/null || true)
+  if [ -n "$pid" ]; then
+    echo "  ⚠ المنفذ $port مستخدم من قبل PID $pid (سيتم استبداله بـ Nginx)"
+  fi
+done
+
+# 0d. Clean npm cache (optional)
+echo ">>> تنظيف ذاكرة npm المخبأة..."
+npm cache clean --force 2>/dev/null || true
+echo "  ✓ تم"
+
+echo ""
+echo ">>> الانتهاء من التنظيف. البدء في التثبيت الجديد..."
+echo ""
 
 # ─── 1. Install system dependencies ───
 echo ">>> Installing system dependencies..."
