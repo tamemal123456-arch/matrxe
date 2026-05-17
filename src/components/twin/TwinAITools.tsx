@@ -32,7 +32,7 @@ interface Tool {
 }
 
 const AVAILABLE_TOOLS: Tool[] = [
-  { id: "web_search", name: "بحث في الإنترنت", description: "بحث متقدم في جوجل وبينغ"، icon: Globe, category: "search", provider: "Google/Bing", enabled: true, background: true, color: "from-blue-500/20 to-indigo-500/20" },
+  { id: "web_search", name: "بحث في الإنترنت", description: "بحث متقدم في جوجل وبينغ", icon: Globe, category: "search", provider: "Google/Bing", enabled: true, background: true, color: "from-blue-500/20 to-indigo-500/20" },
   { id: "deep_search", name: "بحث عميق", description: "تحليل متعمق للموضوعات المعقدة", icon: Search, category: "search", provider: "AI Deep Search", enabled: true, background: false, color: "from-purple-500/20 to-violet-500/20" },
   { id: "image_gen", name: "توليد الصور", description: "إنشاء صور من النصوص", icon: Image, category: "creative", provider: "DALL-E / Stable Diffusion", enabled: false, background: false, color: "from-pink-500/20 to-rose-500/20" },
   { id: "content_write", name: "كتابة المحتوى", description: "كتابة مقالات وإعلانات", icon: Pen, category: "creative", provider: "GPT-4o", enabled: true, background: true, color: "from-amber-500/20 to-yellow-500/20" },
